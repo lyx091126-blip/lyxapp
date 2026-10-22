@@ -1,0 +1,36 @@
+name: Build iOS lyxapp
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: List files for debug
+        run: ls -R
+
+      - name: Xcode Build
+        run: |
+          xcodebuild \
+            -project lyxapp.xcodeproj \
+            -scheme lyxapp \
+            -destination generic/platform=iOS \
+            -configuration Release \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Release-iphoneos/lyxapp.app Payload/
+          zip -r lyxapp.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: lyxapp-ipa
+          path: lyxapp.ipa

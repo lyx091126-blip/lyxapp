@@ -1,0 +1,29 @@
+name: Build iOS lyxapp
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 缓存编译文件
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-xcode-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-
+
+      - name: Xcode编译
+        run: |
+          xcodebuild -project lyxapp.xcodeproj -scheme lyxapp -configuration Release -derivedDataPath ~/Library/Developer/Xcode/DerivedData
+
+      - name: 导出IPA包
+        uses: actions/upload-artifact@v4
+        with:
+          name: lyxapp-ipa
+          path: ~/Library/Developer/Xcode/DerivedData/**/*.ipa
